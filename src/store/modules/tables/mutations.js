@@ -7,6 +7,12 @@ export default {
     // console.log("table Data", payload);
     state.tableData = payload;
   },
+  SET_TABLE_DATA_TEMP(state, payload) {
+    state.tableDataTemp = payload;
+  },
+  SET_TABLE_DATA_EDIT(state, payload) {
+    state.tableDataEdit = payload;
+  },
   SET_ISLOADING(state, payload) {
     state.isLoading = payload;
   }

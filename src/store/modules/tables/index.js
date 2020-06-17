@@ -6,7 +6,9 @@ export default {
   state: {
     tableData: [],
     columns: [],
-    isLoading: false
+    isLoading: false,
+    tableDataTemp: [],
+    tableDataEdit: []
   },
   actions,
   mutations

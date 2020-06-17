@@ -2,62 +2,62 @@ module.exports = {
   tableData: [
     {
       id: 1,
-      name: "A",
-      username: "AA",
+      name: "Albert",
+      username: "alberto",
       address: "Atambua"
     },
     {
       id: 2,
-      name: "B",
-      username: "BB",
+      name: "Barron",
+      username: "barronese",
       address: "Bandung"
     },
     {
       id: 3,
-      name: "C",
-      username: "CC",
+      name: "Charlie",
+      username: "charliecc",
       address: "Cilacap"
     },
     {
       id: 4,
-      name: "D",
-      username: "DD",
+      name: "Dermount",
+      username: "derunmount",
       address: "Denpasar"
     },
     {
       id: 5,
-      name: "E",
-      username: "EE",
+      name: "Eagle",
+      username: "eaglers",
       address: "Ende"
     },
     {
       id: 6,
-      name: "F",
-      username: "FF",
+      name: "France",
+      username: "francest",
       address: "Bogor"
     },
     {
       id: 7,
-      name: "G",
-      username: "GG",
+      name: "George",
+      username: "georgy",
       address: "Garut"
     },
     {
       id: 8,
-      name: "H",
-      username: "HH",
+      name: "Hayley",
+      username: "hyly",
       address: "Emen"
     },
     {
       id: 9,
-      name: "I",
-      username: "II",
+      name: "Iguana",
+      username: "iguanax",
       address: "Indramayu"
     },
     {
       id: 10,
-      name: "J",
-      username: "JJ",
+      name: "James",
+      username: "jamesjon",
       address: "Jakarta"
     }
   ],
@@ -114,8 +114,8 @@ module.exports = {
       formatter: function() {
         // console.log(rowData, rowIndex, pagingIndex, field);
         return `<span>
-          <button class="update">Update</button> &nbsp;
-          <button class="delete">Delete</button>
+          <button class="updateBtn">Update</button> &nbsp;
+          <button class="deleteBtn">Delete</button>
         </span>`;
       },
       isResize: true

@@ -1,260 +1,139 @@
 <template>
-  <div class="row justify-center">
-    <div class="col col-md-8">
-      <div v-if="isLoading">
-        <Loading />
-      </div>
-      <div v-else>
-        <p class="text-h1 text-center">Table</p>
-        <q-form @submit="searchData">
-          <q-btn-toggle
-            v-model="searchBy"
-            push
-            glossy
-            toggle-color="primary"
-            :options="options"
+  <q-page padding>
+    <div class="row justify-center">
+      <div class="col col-md-8">
+        <div v-if="isLoading">
+          <Loading />
+        </div>
+        <div v-else>
+          <Search :tableData="tableData" @attachDomToClass="attachDomToClass" />
+          <v-table
+            style="width:100%"
+            multiple-sort
+            :columns="columns"
+            :table-data="tableData"
+            :show-vertical-border="false"
+            :select-all="selectAll"
+            :select-change="selectChange"
+            row-hover-color="#eee"
+            row-click-color="#edf7ff"
+            @sort-change="sortChange"
+          >
+          </v-table>
+
+          <div class="bottomBtn">
+            <q-btn
+              @click="bulkUpdateShow"
+              :disabled="this.selections.length === 0"
+            >
+              EDIT SELECTED
+            </q-btn>
+            <q-btn
+              @click="showUpdateAllWithValue"
+              :disabled="this.selections.length === 0"
+            >
+              BULK EDIT
+            </q-btn>
+            <q-btn
+              @click="showBulkDeleteModal"
+              :disabled="this.selections.length === 0"
+            >
+              BULK DELETE
+            </q-btn>
+          </div>
+
+          <DetailModal
+            @closeModal="closeModal"
+            :showDetail="showDetail"
+            :payload="payload"
           />
-          <q-input
-            class="searchInput"
-            type="text"
-            v-model="keyword"
-            placeholder="search"
+
+          <DeleteModal
+            :showDelete="showDelete"
+            @closeModal="closeModal"
+            :deleteRow="deleteRow"
           />
-          <q-btn @click="clearKeyword" label="reset" />
-        </q-form>
-        <v-table
-          style="width:100%"
-          :columns="columns"
-          :table-data="tableData"
-          :show-vertical-border="false"
-          :multiple-sort="multipleSort"
-          :select-all="selectAll"
-          :select-change="selectChange"
-          :select-group-change="selectGroupChange"
-          row-hover-color="#eee"
-          row-click-color="#edf7ff"
-          @sort-change="sortChange"
-        >
-        </v-table>
-        <q-btn @click="bulkUpdate" :disabled="this.selections.length === 0">
-          Selection Edit
-        </q-btn>
-        <q-btn
-          @click="showUpdateAllWithValue"
-          :disabled="this.selections.length === 0"
-        >
-          Edit Selected with value
-        </q-btn>
-        <q-btn @click="bulkDelete" :disabled="this.selections.length === 0">
-          Delete
-        </q-btn>
 
-        <q-dialog
-          v-model="showDetail"
-          transition-show="rotate"
-          transition-hide="rotate"
-        >
-          <q-card>
-            <q-card-section>
-              <div class="text-h6">{{ name }}</div>
-              <p>{{ username }}</p>
-              <p>{{ address }}</p>
-            </q-card-section>
+          <UpdateModal
+            :showUpdate="showUpdate"
+            :payload="payload"
+            :tableData="tableData"
+            :index="index"
+            @closeModal="closeModal"
+          />
 
-            <q-card-actions align="right">
-              <q-btn flat label="OK" color="primary" @click="closeModal" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
+          <UpdateSelectedModal
+            :showEditWithValue="showEditWithValue"
+            :payloadSelected="payloadSelected"
+            :tableData="tableData"
+            :selections="selections"
+            @closeModal="closeModal"
+          />
 
-        <q-dialog v-model="confirm" persistent>
-          <q-card>
-            <q-card-section class="row items-center">
-              <span class="q-ml-sm">
-                Are you sure gonna delete this row ?
-              </span>
-            </q-card-section>
+          <BulkUpdateSelectedModal
+            :showBulkEdit="showBulkEdit"
+            :index="index"
+            @closeModal="closeModal"
+            :saveAllData="saveAllData"
+          />
 
-            <q-card-actions align="right">
-              <q-btn flat label="Confirm" color="primary" @click="deleteRow" />
-              <q-btn flat label="Cancel" color="primary" @click="closeModal" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-
-        <q-dialog v-model="prompt" persistent>
-          <q-card style="min-width: 350px">
-            <q-card-section>
-              <q-input
-                clearable
-                filled
-                color="purple-12"
-                v-model="name"
-                label="Name"
-                required
-              />
-              <q-input
-                clearable
-                filled
-                color="purple-12"
-                v-model="username"
-                label="username"
-                required
-              />
-              <q-input
-                clearable
-                filled
-                color="purple-12"
-                v-model="address"
-                label="address"
-                required
-              />
-            </q-card-section>
-
-            <q-card-actions align="right" class="text-primary">
-              <q-btn flat label="Cancel" @click="closeModal" />
-              <q-btn flat label="Save" @click="saveData" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-
-        <q-dialog v-model="showEditWithValue" persistent>
-          <q-card style="min-width: 350px">
-            <q-card-section>
-              <q-input
-                clearable
-                filled
-                color="purple-12"
-                v-model="nameAll"
-                label="Name"
-                required
-              />
-              <q-input
-                clearable
-                filled
-                color="purple-12"
-                v-model="usernameAll"
-                label="username"
-                required
-              />
-              <q-input
-                clearable
-                filled
-                color="purple-12"
-                v-model="addressAll"
-                label="address"
-                required
-              />
-            </q-card-section>
-
-            <q-card-actions align="right" class="text-primary">
-              <q-btn flat label="Cancel" @click="closeModal" />
-              <q-btn flat label="Save" @click="bulkUpdateWithValue" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-
-        <q-dialog v-model="showBulkEdit" persistent>
-          <q-card style="min-width: 350px">
-            <div v-for="(data, index) in tableDataEdit" :key="data.id">
-              <q-card-section v-if="index === current - 1">
-                <q-input
-                  clearable
-                  filled
-                  color="purple-12"
-                  v-model="data.name"
-                  label="Name"
-                />
-                <q-input
-                  clearable
-                  filled
-                  color="purple-12"
-                  v-model="data.username"
-                  label="username"
-                />
-                <q-input
-                  clearable
-                  filled
-                  color="purple-12"
-                  v-model="data.address"
-                  label="address"
-                />
-                <q-pagination v-model="current" :max="tableDataEdit.length">
-                </q-pagination>
-              </q-card-section>
-            </div>
-
-            <q-card-actions align="right" class="text-primary">
-              <q-btn flat label="Cancel" @click="closeModal" />
-              <q-btn flat label="Save All Data" @click="saveAllData" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
+          <BulkDeleteModal
+            :showBulkDelete="showBulkDelete"
+            @closeModal="closeModal"
+            @bulkDelete="bulkDelete"
+          />
+        </div>
       </div>
     </div>
-  </div>
+  </q-page>
 </template>
 
 <script>
+import EventBus from "../../eventBus";
 import Loading from "../../components/Loading";
+import Search from "./components/Search.vue";
+import DetailModal from "./components/DetailModal.vue";
+import DeleteModal from "./components/DeleteModal.vue";
+import UpdateModal from "./components/UpdateModal.vue";
+import UpdateSelectedModal from "./components/UpdateSelectedModal";
+import BulkUpdateSelectedModal from "./components/BulkUpdateSelectedModal";
+import BulkDeleteModal from "./components/BulkDeleteModal";
 
 export default {
   name: "tables",
   components: {
-    Loading
+    DetailModal,
+    DeleteModal,
+    UpdateModal,
+    UpdateSelectedModal,
+    BulkUpdateSelectedModal,
+    BulkDeleteModal,
+    Loading,
+    Search
   },
   data() {
     return {
-      multipleSort: true,
-      selections: [],
-      prompt: false,
-      confirm: false,
-      index: null,
-      name: "",
-      username: "",
-      address: "",
-      nameAll: "",
-      usernameAll: "",
-      addressAll: "",
+      showDetail: false,
+      showUpdate: false,
+      showDelete: false,
       showEditWithValue: false,
       showBulkEdit: false,
-      tableDataEdit: [],
-      current: 1,
-      showDetail: false,
-      keyword: "",
-      tableDataTemp: [],
-      options: [
-        { label: "Name", value: "name" },
-        { label: "Username", value: "username" }
-      ],
-      searchBy: "name"
+      showBulkDelete: false,
+      index: null,
+      payload: {
+        name: "",
+        username: "",
+        address: ""
+      },
+      payloadSelected: {
+        name: "",
+        username: "",
+        address: ""
+      },
+      selections: []
     };
   },
   methods: {
-    searchData() {
-      console.log(this.keyword);
-      console.log(this.searchBy);
-      let tableData = [...this.tableData];
-      if (this.tableDataTemp.length === 0) {
-        this.tableDataTemp = [...tableData];
-      } else {
-        tableData = [...this.tableDataTemp];
-      }
-      // if (this.keyword === "") {
-      //   tableData = [...this.tableDataTemp];
-      // }
-      tableData = tableData.filter(el =>
-        el[this.searchBy].includes(this.keyword)
-      );
-      // console.log(this.tableData, "<<<<<<<<");
-      // console.log(this.tableDataTemp, ">>>>>>>");
-      this.$store.commit("tables/SET_TABLE_DATA", tableData);
-    },
-    clearKeyword() {
-      const tableData = [...this.tableDataTemp];
-      this.$store.commit("tables/SET_TABLE_DATA", tableData);
-      this.keyword = "";
-    },
     sortChange(params) {
       let columns = this.columns;
       let tableData = this.tableData;
@@ -262,7 +141,6 @@ export default {
         columns = columns.map(el => {
           if (el.field === key) {
             if (el.orderBy !== params[key]) {
-              // console.log(el, "same field different orderBy", el.orderBy, params[key]);
               if (params[key] === "desc") {
                 tableData.sort(function(a, b) {
                   return b.username.localeCompare(a.username);
@@ -278,55 +156,22 @@ export default {
         });
       }
       this.$store.commit("tables/SET_COLUMNS", columns);
-      // this.$store.commit("tables/SET_TABLE_DATA", tableData);
     },
     selectAll(selection) {
-      // console.log("select all", selection);
       this.selections = selection;
     },
     selectChange(selection) {
-      // console.log("select-change", selection);
-      this.selections = selection;
-    },
-    selectGroupChange(selection) {
-      // console.log("select-group-change", selection);
       this.selections = selection;
     },
     showUpdateModal(index) {
-      console.log("UPDATE", index);
       const { name, username, address } = this.tableData[index];
       this.index = index;
-      this.name = name;
-      this.username = username;
-      this.address = address;
-      this.prompt = true;
-    },
-    saveData() {
-      console.log("save data");
-      this.$store.commit("SET_ISLOADING", true);
-      let tableData = this.tableData.map((el, i) => {
-        if (+i === +this.index) {
-          el = {
-            ...el,
-            name: this.name,
-            username: this.username,
-            address: this.address
-          };
-        }
-        return el;
-      });
-      // console.log(tableData);
-      this.$store.commit("tables/SET_TABLE_DATA", tableData);
-      this.name = "";
-      this.username = "";
-      this.address = "";
-      this.prompt = false;
-      this.$store.commit("SET_ISLOADING", false);
+      this.payload = { name, username, address };
+      this.showUpdate = true;
     },
     saveAllData() {
-      console.log(this.tableDataEdit, "edit");
-      // console.log(this.tableData, "table data");
-      let tableData = this.tableData;
+      let tableData = [...this.tableData];
+      let tableDataTemp = [...this.tableDataTemp];
       this.tableDataEdit.forEach(el => {
         tableData = tableData.map(data => {
           if (+data.id === +el.id) {
@@ -334,36 +179,46 @@ export default {
           }
           return data;
         });
+        tableDataTemp = tableDataTemp.map(data => {
+          if (+data.id === +el.id) {
+            data = { ...el };
+          }
+          return data;
+        });
       });
-      console.log(tableData, "tableData");
+      this.$store.commit("tables/SET_TABLE_DATA_TEMP", tableDataTemp);
       this.$store.commit("tables/SET_TABLE_DATA", tableData);
       this.showBulkEdit = false;
     },
     showDeleteModal(index) {
       this.index = index;
-      this.confirm = true;
+      this.showDelete = true;
     },
     deleteRow() {
-      let dataTable = this.tableData;
-      dataTable.splice(this.index, 1);
-      this.confirm = false;
+      let tableData = this.tableData;
+      if (this.$store.state.tables.tableDataTemp.length !== 0) {
+        let tableDataTemp = this.tableDataTemp.filter(
+          el => el.id !== tableData[this.index].id
+        );
+        this.$store.commit("tables/SET_TABLE_DATA_TEMP", tableDataTemp);
+      }
+      tableData.splice(this.index, 1);
+      this.$store.commit("tables/SET_TABLE_DATA", tableData);
+      this.showDelete = false;
     },
-    closeModal() {
+    closeModal(status = false) {
       this.index = null;
-      this.prompt = false;
-      this.confirm = false;
-      this.showBulkEdit = false;
-      this.showDetail = false;
-      this.showEditWithValue = false;
-      this.tableDataEdit = [];
-      this.name = "";
-      this.username = "";
-      this.address = "";
-      this.nameAll = "";
-      this.usernameAll = "";
-      this.addressAll = "";
+      this.showUpdate = status;
+      this.showDelete = status;
+      this.showBulkEdit = status;
+      this.showDetail = status;
+      this.showEditWithValue = status;
+      this.showBulkDelete = status;
+      this.$store.commit("tables/SET_TABLE_DATA_EDIT", []);
+      this.payload = { name: "", username: "", address: "" };
+      this.payloadSelected = { name: "", username: "", address: "" };
     },
-    bulkUpdate() {
+    bulkUpdateShow() {
       let newTableData = [];
       for (let i = 0; i < this.selections.length; i++) {
         const table = this.tableData.filter(
@@ -376,51 +231,66 @@ export default {
           address: table[0].username
         });
       }
-      // console.log(newTableData, "cg=h<<<<");
-      this.tableDataEdit = [...newTableData];
-      // console.log(this.tableDataEdit, "table data edit");
+      this.$store.commit("tables/SET_TABLE_DATA_EDIT", newTableData);
       this.showBulkEdit = true;
-      // console.log(newTableData);
     },
     showUpdateAllWithValue() {
       this.showEditWithValue = true;
     },
-    bulkUpdateWithValue() {
-      let tableData = [...this.tableData];
-      this.selections.forEach(el => {
-        tableData = tableData.map(data => {
-          if (+data.id === +el.id) {
-            data = {
-              ...data,
-              name: this.nameAll,
-              username: this.usernameAll,
-              address: this.addressAll
-            };
-          }
-          return data;
-        });
-      });
-      this.$store.commit("tables/SET_TABLE_DATA", tableData);
-      this.showEditWithValue = false;
+    showBulkDeleteModal() {
+      this.showBulkDelete = true;
     },
     bulkDelete() {
-      console.log("bulk delete");
-      let tableData = this.tableData;
+      let tableData = [...this.tableData];
+      let tableDataTemp = [...this.tableDataTemp];
       for (let i = 0; i < this.selections.length; i++) {
         tableData = tableData.filter(
           data => +data.id !== +this.selections[i].id
         );
+        tableDataTemp = tableDataTemp.filter(
+          data => +data.id !== +this.selections[i].id
+        );
       }
       this.selections = [];
+      this.$store.commit("tables/SET_TABLE_DATA_TEMP", tableDataTemp);
       this.$store.commit("tables/SET_TABLE_DATA", tableData);
+      this.showBulkDelete = false;
     },
     showDetailModal(index) {
       this.index = index;
       const { name, username, address } = this.tableData[index];
-      this.name = name;
-      this.username = username;
-      this.address = address;
+      this.payload = { name, username, address };
       this.showDetail = true;
+    },
+    attachDomToClass() {
+      setTimeout(() => {
+        const updateBtn = document.querySelectorAll(".updateBtn");
+        updateBtn.forEach((el, i) => {
+          el.addEventListener("click", () => {
+            this.showUpdateModal(i);
+          });
+        });
+        const deleteBtn = document.querySelectorAll(".deleteBtn");
+        deleteBtn.forEach((el, i) => {
+          el.addEventListener("click", () => {
+            this.showDeleteModal(i);
+          });
+        });
+        const showDetailByName = document.querySelectorAll(".showDetailByName");
+        showDetailByName.forEach((el, i) => {
+          el.addEventListener("click", () => {
+            this.showDetailModal(i);
+          });
+        });
+        const showDetailByUsername = document.querySelectorAll(
+          ".showDetailByUsername"
+        );
+        showDetailByUsername.forEach((el, i) => {
+          el.addEventListener("click", () => {
+            this.showDetailModal(i);
+          });
+        });
+      }, 500);
     }
   },
   created() {
@@ -436,41 +306,87 @@ export default {
     },
     tableData() {
       return this.$store.state.tables.tableData;
+    },
+    tableDataTemp() {
+      return this.$store.state.tables.tableDataTemp;
+    },
+    tableDataEdit() {
+      return this.$store.state.tables.tableDataEdit;
     }
   },
   mounted() {
-    const updateClass = document.querySelectorAll(".update");
-    updateClass.forEach((el, i) => {
-      el.addEventListener("click", () => {
-        this.showUpdateModal(i);
-      });
+    this.attachDomToClass();
+    EventBus.$on("SET_PAYLOAD", payload => {
+      this.payload = { ...this.payload, ...payload };
     });
-    const deleteRow = document.querySelectorAll(".delete");
-    deleteRow.forEach((el, i) => {
-      el.addEventListener("click", () => {
-        this.showDeleteModal(i);
-      });
-    });
-    const showDetailByName = document.querySelectorAll(".showDetailByName");
-    showDetailByName.forEach((el, i) => {
-      el.addEventListener("click", () => {
-        this.showDetailModal(i);
-      });
-    });
-    const showDetailByUsername = document.querySelectorAll(
-      ".showDetailByUsername"
-    );
-    showDetailByUsername.forEach((el, i) => {
-      el.addEventListener("click", () => {
-        this.showDetailModal(i);
-      });
+
+    EventBus.$on("SET_PAYLOAD_SELECTED", payload => {
+      this.payloadSelected = { ...this.payloadSelected, ...payload };
     });
   }
 };
 </script>
 
-<style lang="scss" scoped>
-.searchInput {
-  border: 1px solid black;
+<style lang="scss">
+.showDetailByUsername:hover {
+  cursor: pointer;
+  color: blue;
+}
+
+.showDetailByName:hover {
+  cursor: pointer;
+  color: blue;
+}
+
+.updateBtn {
+  background-color: white;
+  border: 1px solid gold;
+  border-radius: 10px;
+  height: 100%;
+}
+
+.updateBtn:hover {
+  background-color: gold;
+  border: 1px solid gold;
+  color: white;
+  cursor: pointer;
+}
+
+.updateBtn:active {
+  background-color: gold;
+  border: 1px solid white;
+  color: white;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background-color: white;
+  border: 1px solid crimson;
+  border-radius: 10px;
+  height: 100%;
+}
+
+.deleteBtn:hover {
+  background-color: crimson;
+  border: 1px solid crimson;
+  color: white;
+  cursor: pointer;
+}
+
+.deleteBtn:active {
+  background-color: crimson;
+  border: 1px solid white;
+  color: white;
+  cursor: pointer;
+}
+
+.bottomBtn {
+  display: flex;
+  justify-content: center;
+  margin: 15px;
+  .q-btn {
+    padding: 0 10px;
+    margin: 0 10px;
+  }
 }
 </style>
