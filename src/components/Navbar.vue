@@ -2,7 +2,7 @@
   <q-header elevated class="glossy">
     <q-toolbar>
       <q-toolbar-title>
-        Table
+        <router-link to="/">TABLES</router-link>
       </q-toolbar-title>
     </q-toolbar>
   </q-header>

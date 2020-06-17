@@ -3,10 +3,12 @@
     <div v-if="isLoading">
       <Loading />
     </div>
-    <Navbar />
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+    <div v-else>
+      <Navbar />
+      <q-page-container>
+        <router-view />
+      </q-page-container>
+    </div>
   </q-layout>
 </template>
 
