@@ -9,7 +9,10 @@
           <Search :tableData="tableData" @attachDomToClass="attachDomToClass" />
           <v-table
             style="width:100%"
+            is-horizontal-resize
+            is-vertical-resize
             multiple-sort
+            column-width-drag
             :columns="columns"
             :table-data="tableData"
             :show-vertical-border="false"
@@ -100,7 +103,7 @@ import BulkUpdateSelectedModal from "./components/BulkUpdateSelectedModal";
 import BulkDeleteModal from "./components/BulkDeleteModal";
 
 export default {
-  name: "tables",
+  name: "data-tables",
   components: {
     DetailModal,
     DeleteModal,

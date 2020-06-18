@@ -32,4 +32,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss">
+.v-table-sort-icon {
+  margin-left: 2px;
+}
+</style>

@@ -87,7 +87,7 @@ module.exports = {
       field: "username",
       title: "Username",
       orderBy: "asc",
-      width: 200,
+      width: 190,
       formatter: function(rowData) {
         // console.log(rowData, rowIndex, pagingIndex, field, "username");
         return `<div class="showDetailByUsername">${rowData.username}</div>`;
@@ -99,7 +99,7 @@ module.exports = {
     {
       field: "address",
       title: "Address",
-      width: 300,
+      width: 270,
       titleAlign: "center",
       columnAlign: "center",
       isResize: true
@@ -107,7 +107,7 @@ module.exports = {
     {
       field: "operations",
       title: "Operations",
-      width: 150,
+      width: 160,
       titleAlign: "center",
       columnAlign: "center",
       // componentName: "TableOperation",
